@@ -60,12 +60,29 @@ internal object NativeAuthClient {
             if (connection.responseCode != HttpURLConnection.HTTP_OK) error("Bootstrap request failed (${connection.responseCode})")
             val length = connection.contentLengthLong
             if (length > maxBytes) error("Bootstrap response is too large")
-            val body = connection.inputStream.use { it.readNBytes(maxBytes + 1) }
+            val body = connection.inputStream.use { readLimited(it, maxBytes + 1) }
             if (body.size > maxBytes) error("Bootstrap response is too large")
             return body
         } finally {
             connection.disconnect()
         }
+    }
+
+    /**
+     * Reads at most [limit] bytes. InputStream.readNBytes is API 33, so on every device
+     * below Android 13 it throws NoSuchMethodError - which the callers' runCatching
+     * swallows into a null CA, surfacing as "identity could not be verified" long after
+     * the gateway has already served the response.
+     */
+    private fun readLimited(input: java.io.InputStream, limit: Int): ByteArray {
+        val buffer = java.io.ByteArrayOutputStream()
+        val chunk = ByteArray(8 * 1024)
+        while (buffer.size() < limit) {
+            val read = input.read(chunk, 0, minOf(chunk.size, limit - buffer.size()))
+            if (read < 0) break
+            buffer.write(chunk, 0, read)
+        }
+        return buffer.toByteArray()
     }
 
     private fun post(origin: GatewayOrigin, path: String, body: JSONObject, caCertificate: ByteArray): NativeSession {
