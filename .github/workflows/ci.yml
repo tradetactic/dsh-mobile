@@ -61,6 +61,15 @@ jobs:
       - name: Test and assemble
         run: gradle --no-daemon testDebugUnitTest assembleDebug
         working-directory: apps/mobile/android
+      - name: Lint for API-level violations
+        continue-on-error: true
+        run: gradle --no-daemon lintDebug
+        working-directory: apps/mobile/android
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: android-lint-report
+          path: apps/mobile/android/app/build/reports/lint-results-debug.*
       - uses: actions/upload-artifact@v7
         with:
           name: dsh-mobile-android-debug
