@@ -17,6 +17,14 @@ android {
         testInstrumentationRunner = "android.test.InstrumentationTestRunner"
     }
 
+    signingConfigs {
+        getByName("debug") {
+            enableV1Signing = true
+            enableV2Signing = true
+            enableV3Signing = true
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
