@@ -57,7 +57,8 @@ private fun resolveSafeArea(insets: WindowInsets): SafeAreaEdges {
         return systemBars.union(displayCutout).union(ime)
     }
 
-    val displayCutout = insets.displayCutout
+    val displayCutout =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) insets.displayCutout else null
     return SafeAreaEdges(
         left = insets.systemWindowInsetLeft,
         top = insets.systemWindowInsetTop,
@@ -84,6 +85,8 @@ private fun android.graphics.Insets.toSafeAreaEdges(): SafeAreaEdges = SafeAreaE
 private fun consumeSafeAreaInsets(insets: WindowInsets): WindowInsets =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
         WindowInsets.CONSUMED
-    } else {
+    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
         insets.consumeSystemWindowInsets().consumeStableInsets().consumeDisplayCutout()
+    } else {
+        insets.consumeSystemWindowInsets().consumeStableInsets()
     }
