@@ -54,8 +54,8 @@ internal object NativeAuthClient {
         val connection = URL(origin.serialized + path).openConnection() as HttpsURLConnection
         try {
             connection.sslSocketFactory = context.socketFactory
-            connection.connectTimeout = 500
-            connection.readTimeout = 800
+            connection.connectTimeout = 5_000
+            connection.readTimeout = 5_000
             connection.instanceFollowRedirects = false
             if (connection.responseCode != HttpURLConnection.HTTP_OK) error("Bootstrap request failed (${connection.responseCode})")
             val length = connection.contentLengthLong
